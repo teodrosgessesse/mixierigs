@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-barlow: 'Barlow', system-ui, sans-serif;
+  --font-barlow-condensed: 'Barlow Condensed', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: #F0F4F8;
+  color: #0F1C2E;
+  font-family: var(--font-barlow);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #F0F4F8; }
+::-webkit-scrollbar-thumb { background: #B8CCDE; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6B8AAA; }
+
+@layer utilities {
+  .font-cond { font-family: var(--font-barlow-condensed); }
+  .font-mono  { font-family: var(--font-mono); }
+}
