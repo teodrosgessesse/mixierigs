@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntelliRigs — AI-Powered Oil & Gas Operations Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:       #0B1F3A;
+    --panel:    #0D2442;
+    --panel2:   #112C50;
+    --border:   #1A3A60;
+    --border2:  #224878;
+    --text:     #C8DCF0;
+    --text2:    #7AAAD0;
+    --text3:    #4A7A9F;
+    --accent:   #1098D0;
+    --accent2:  #0D7DB0;
+    --green:    #00D68A;
+    --amber:    #F59E0B;
+    --red:      #EF4444;
+    --navy:     #0B1F3A;
+    --white:    #FFFFFF;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Inter', sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand-icon {
+    width:28px; height:28px;
+    background: var(--accent);
+    border-radius: 5px;
+    display: flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color:#fff; letter-spacing:-1px;
+  }
+  .brand-name { font-size:15px; font-weight:700; color:#fff; letter-spacing:-0.3px; }
+  .brand-sub  { font-size:10px; color:var(--text3); font-weight:400; }
+  .topbar-mid { flex:1; display:flex; align-items:center; gap:6px; }
+  .rig-pill {
+    display:flex; align-items:center; gap:6px;
+    background: var(--panel2); border:1px solid var(--border);
+    border-radius:20px; padding:3px 12px 3px 8px;
+    cursor:pointer; transition:border-color 0.15s;
+  }
+  .rig-pill:hover { border-color:var(--accent); }
+  .rig-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
+  .rig-dot.amber { background:var(--amber); }
+  .rig-dot.offline { background:var(--text3); }
+  .rig-label { font-size:11px; font-weight:600; color:var(--text); }
+  .rig-class { font-size:10px; color:var(--text3); }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .tb-btn {
+    display:flex; align-items:center; gap:5px;
+    background:var(--panel2); border:1px solid var(--border);
+    color:var(--text2); border-radius:6px; padding:4px 10px;
+    cursor:pointer; font-size:11px; transition:all 0.15s;
+  }
+  .tb-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .alert-badge {
+    background:var(--red); color:#fff;
+    border-radius:10px; padding:1px 6px;
+    font-size:10px; font-weight:700;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  #main { display:flex; flex:1; overflow:hidden; }
+
+  /* ── LEFT NAV ── */
+  #leftnav {
+    width:52px; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; padding:8px 0; gap:4px;
+    flex-shrink:0;
+  }
+  .nav-btn {
+    width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all 0.15s; color:var(--text3);
+    border: 1px solid transparent;
+    font-size:16px;
+  }
+  .nav-btn:hover { background:var(--panel2); color:var(--text); border-color:var(--border); }
+  .nav-btn.active { background:var(--accent); color:#fff; border-color:var(--accent2); }
+  .nav-sep { width:28px; height:1px; background:var(--border); margin:4px 0; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width:240px; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; overflow:hidden; flex-shrink:0;
+  }
+  .sidebar-header {
+    padding:10px 12px 8px;
+    border-bottom:1px solid var(--border);
+    font-size:10px; font-weight:600; color:var(--text3);
+    letter-spacing:1px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .sidebar-scroll { flex:1; overflow-y:auto; }
+  .sidebar-scroll::-webkit-scrollbar { width:4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+  /* Domain group */
+  .domain-group { border-bottom:1px solid var(--border); }
+  .domain-header {
+    display:flex; align-items:center; gap:8px;
+    padding:7px 12px; cursor:pointer;
+    transition:background 0.12s;
+  }
+  .domain-header:hover { background:var(--panel2); }
+  .domain-header.active { background:rgba(16,152,208,0.08); }
+  .domain-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .domain-name { font-size:11px; font-weight:600; color:var(--text); flex:1; }
+  .domain-count { font-size:10px; color:var(--text3); }
+  .domain-chevron { font-size:10px; color:var(--text3); transition:transform 0.2s; }
+  .domain-chevron.open { transform:rotate(90deg); }
+
+  .device-list { display:none; }
+  .device-list.open { display:block; }
+  .device-item {
+    display:flex; align-items:center; gap:8px;
+    padding:5px 12px 5px 26px;
+    cursor:pointer; transition:background 0.12s;
+  }
+  .device-item:hover { background:var(--panel2); }
+  .device-item.selected { background:rgba(16,152,208,0.12); border-left:2px solid var(--accent); }
+  .device-status { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .device-name { font-size:11px; color:var(--text2); flex:1; }
+  .device-val { font-size:10px; font-family:var(--mono); color:var(--text3); }
+  .device-val.alarm { color:var(--red); font-weight:600; }
+  .device-val.warn  { color:var(--amber); font-weight:600; }
+  .device-val.ok    { color:var(--green); }
+
+  /* ── CENTRE ── */
+  #centre {
+    flex:1; display:flex; flex-direction:column; overflow:hidden;
+    background: #071828;
+  }
+  .centre-tabs {
+    display:flex; align-items:center; gap:0;
+    background:var(--panel); border-bottom:1px solid var(--border);
+    padding:0 16px; height:38px; flex-shrink:0;
+  }
+  .ctab {
+    font-size:11px; font-weight:500; color:var(--text3);
+    padding:0 14px; height:38px; display:flex; align-items:center;
+    cursor:pointer; border-bottom:2px solid transparent;
+    transition:all 0.15s; white-space:nowrap;
+  }
+  .ctab:hover { color:var(--text); }
+  .ctab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+  .centre-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+
+  /* ── DIGITAL TWIN VIEW ── */
+  #twin-view {
+    flex:1; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .twin-toolbar {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 16px; border-bottom:1px solid var(--border);
+    background:rgba(13,36,66,0.8); flex-shrink:0;
+  }
+  .tt-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:0.8px; }
+  .tt-chip {
+    font-size:10px; padding:2px 10px; border-radius:12px;
+    border:1px solid var(--border2); color:var(--text2); cursor:pointer;
+    transition:all 0.15s;
+  }
+  .tt-chip:hover,.tt-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .twin-spacer { flex:1; }
+
+  /* SVG DEVICE CANVAS */
+  #svg-canvas {
+    flex:1; overflow:auto; display:flex; align-items:center; justify-content:center;
+    padding:20px; position:relative;
+  }
+  .device-svg-container {
+    background: linear-gradient(135deg, #071828 0%, #0a2035 100%);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* SVG label styles */
+  .svg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    fill: #7AAAD0;
+  }
+  .svg-label-bold {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: #C8DCF0;
+  }
+  .svg-label-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #FFFFFF;
+  }
+  .svg-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: #1098D0;
+  }
+  .svg-alarm { fill: #EF4444 !important; }
+  .svg-warn  { fill: #F59E0B !important; }
+  .svg-ok    { fill: #00D68A !important; }
+  .leader { stroke:#1A3A60; stroke-width:0.5; stroke-dasharray:3 3; fill:none; }
+
+  /* ── KPI strip below SVG ── */
+  .kpi-strip {
+    display:flex; gap:0; border-top:1px solid var(--border);
+    background:var(--panel); flex-shrink:0;
+  }
+  .kpi-cell {
+    flex:1; padding:8px 12px; border-right:1px solid var(--border);
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .kpi-cell:last-child { border-right:none; }
+  .kpi-key { font-size:10px; color:var(--text3); }
+  .kpi-val { font-size:15px; font-weight:700; font-family:var(--mono); color:var(--text); }
+  .kpi-val.ok { color:var(--green); }
+  .kpi-val.warn { color:var(--amber); }
+  .kpi-val.alarm { color:var(--red); }
+  .kpi-unit { font-size:10px; color:var(--text3); font-weight:400; }
+
+  /* ── RIGHT PANEL: AI ── */
+  #rightpanel {
+    width:300px; background:var(--panel); border-left:1px solid var(--border);
+    display:flex; flex-direction:column; overflow:hidden; flex-shrink:0;
+  }
+  .rp-header {
+    padding:10px 12px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px;
+  }
+  .rp-title { font-size:12px; font-weight:700; color:var(--text); flex:1; }
+  .ai-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .rp-scroll { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+  .rp-scroll::-webkit-scrollbar { width:4px; }
+  .rp-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+  /* Alert cards */
+  .alert-card {
+    border-radius:8px; border:1px solid var(--border);
+    background:var(--panel2); padding:10px; cursor:pointer;
+    transition:border-color 0.15s;
+  }
+  .alert-card:hover { border-color:var(--accent); }
+  .alert-card.alarm { border-left:3px solid var(--red); }
+  .alert-card.warn  { border-left:3px solid var(--amber); }
+  .alert-card.info  { border-left:3px solid var(--accent); }
+  .alert-card.ok    { border-left:3px solid var(--green); }
+  .ac-header { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+  .ac-badge {
+    font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .ac-badge.alarm { background:rgba(239,68,68,0.2); color:var(--red); }
+  .ac-badge.warn  { background:rgba(245,158,11,0.2); color:var(--amber); }
+  .ac-badge.info  { background:rgba(16,152,208,0.2); color:var(--accent); }
+  .ac-badge.ok    { background:rgba(0,214,138,0.2); color:var(--green); }
+  .ac-time { font-size:10px; color:var(--text3); margin-left:auto; }
+  .ac-title { font-size:11px; font-weight:600; color:var(--text); margin-bottom:3px; }
+  .ac-body  { font-size:10px; color:var(--text2); line-height:1.5; }
+  .ac-actions { display:flex; gap:6px; margin-top:7px; }
+  .ac-btn {
+    font-size:10px; padding:3px 8px; border-radius:5px;
+    border:1px solid var(--border2); color:var(--text2);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .ac-btn.primary { background:var(--accent); border-color:var(--accent2); color:#fff; }
+  .ac-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .ac-btn.primary:hover { background:var(--accent2); }
+
+  /* AI chat input */
+  .rp-input {
+    padding:10px; border-top:1px solid var(--border);
+    display:flex; gap:6px;
+  }
+  .rp-textarea {
+    flex:1; background:var(--panel2); border:1px solid var(--border);
+    border-radius:6px; padding:6px 8px; color:var(--text);
+    font-family:var(--sans); font-size:11px; resize:none;
+    outline:none; height:48px;
+  }
+  .rp-textarea:focus { border-color:var(--accent); }
+  .rp-send {
+    background:var(--accent); border:none; border-radius:6px;
+    width:36px; color:#fff; cursor:pointer; font-size:14px;
+    transition:background 0.15s;
+  }
+  .rp-send:hover { background:var(--accent2); }
+
+  /* ── STATUS BAR ── */
+  #statusbar {
+    height:22px; background:var(--navy); border-top:1px solid var(--border);
+    display:flex; align-items:center; padding:0 12px; gap:16px; flex-shrink:0;
+  }
+  .sb-item { font-size:10px; color:var(--text3); display:flex; align-items:center; gap:4px; }
+  .sb-dot  { width:5px; height:5px; border-radius:50%; }
+
+  /* ── DEVICE SELECTOR GRID (non-twin views) ── */
+  .device-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:12px; padding:16px; overflow-y:auto;
+  }
+  .dev-card {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:12px; cursor:pointer;
+    transition:all 0.15s;
+  }
+  .dev-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+  .dev-card-title { font-size:12px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .dev-card-sub   { font-size:10px; color:var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP BAR ═══════════ -->
+<div id="topbar">
+  <div class="brand">
+    <div class="brand-icon">IR</div>
+    <div>
+      <div class="brand-name">IntelliRigs</div>
+      <div class="brand-sub">IntelliMedia Networks, Inc.</div>
+    </div>
+  </div>
+
+  <div class="topbar-mid">
+    <div class="rig-pill" onclick="selectRig('floater')">
+      <div class="rig-dot"></div>
+      <div>
+        <div class="rig-label">Neptune Star</div>
+        <div class="rig-class">Semi-submersible · GOM</div>
+      </div>
+    </div>
+    <div class="rig-pill" onclick="selectRig('jackup')">
+      <div class="rig-dot amber"></div>
+      <div>
+        <div class="rig-label">Atlas JU-47</div>
+        <div class="rig-class">Jack-Up · North Sea</div>
+      </div>
+    </div>
+    <div class="rig-pill" onclick="selectRig('land')">
+      <div class="rig-dot offline"></div>
+      <div>
+        <div class="rig-label">Ranger 3</div>
+        <div class="rig-class">Land Rig · Permian</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="tb-btn" onclick="toggleAlerts()">
+      🔔 Alerts <span class="alert-badge" id="alertCount">3</span>
+    </div>
+    <div class="tb-btn">⚙ Config</div>
+    <div class="tb-btn" style="color:var(--accent)">AI Active</div>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div id="main">
+
+  <!-- LEFT NAV -->
+  <div id="leftnav">
+    <div class="nav-btn active" title="Digital Twin" onclick="setView('twin')">🔷</div>
+    <div class="nav-btn" title="Dashboard" onclick="setView('dash')">📊</div>
+    <div class="nav-btn" title="Alarms" onclick="setView('alarms')">🔔</div>
+    <div class="nav-btn" title="Notifications" onclick="setView('notif')">📨</div>
+    <div class="nav-sep"></div>
+    <div class="nav-btn" title="Reports" onclick="setView('reports')">📋</div>
+    <div class="nav-btn" title="AI Insights" onclick="setView('ai')">🧠</div>
+    <div class="nav-sep"></div>
+    <div class="nav-btn" title="Settings">⚙</div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span>SUBSYSTEMS</span>
+      <span style="color:var(--green);font-size:9px;">● LIVE</span>
+    </div>
+    <div class="sidebar-scroll" id="sidebarContent"></div>
+  </div>
+
+  <!-- CENTRE -->
+  <div id="centre">
+    <div class="centre-tabs">
+      <div class="ctab active" onclick="setCTab(this,'twin-view')">Digital Twin</div>
+      <div class="ctab" onclick="setCTab(this,'data-view')">Live Data</div>
+      <div class="ctab" onclick="setCTab(this,'trend-view')">Trends</div>
+      <div class="ctab" onclick="setCTab(this,'case-view')">Case History</div>
+    </div>
+
+    <div class="centre-content">
+
+      <!-- DIGITAL TWIN TAB -->
+      <div id="twin-view" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+        <div class="twin-toolbar">
+          <span class="tt-label">DEVICE</span>
+          <div class="tt-chip active" onclick="showDevice('mud-pump',this)">Mud Pump</div>
+          <div class="tt-chip" onclick="showDevice('bop',this)">BOP Stack</div>
+          <div class="tt-chip" onclick="showDevice('top-drive',this)">Top Drive</div>
+          <div class="tt-chip" onclick="showDevice('drawworks',this)">Drawworks</div>
+          <div class="tt-chip" onclick="showDevice('centrifugal',this)">Centrifugal Pump</div>
+          <div class="twin-spacer"></div>
+          <div class="tt-chip">Export SVG</div>
+        </div>
+
+        <div id="svg-canvas">
+          <div class="device-svg-container" id="deviceContainer"></div>
+        </div>
+
+        <div class="kpi-strip" id="kpiStrip"></div>
+      </div>
+
+      <!-- DATA VIEW -->
+      <div id="data-view" style="display:none;flex:1;overflow:auto;padding:16px;">
+        <div style="color:var(--text2);font-size:12px;">Live sensor data table — select a device from the sidebar</div>
+      </div>
+
+      <!-- TREND VIEW -->
+      <div id="trend-view" style="display:none;flex:1;overflow:auto;padding:16px;">
+        <div style="color:var(--text2);font-size:12px;">Trend charts — coming soon</div>
+      </div>
+
+      <!-- CASE VIEW -->
+      <div id="case-view" style="display:none;flex:1;overflow:auto;padding:16px;">
+        <div style="color:var(--text2);font-size:12px;">Prior case history for this component</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="rightpanel">
+    <div class="rp-header">
+      <div class="ai-dot"></div>
+      <div class="rp-title">AI Situation Analysis</div>
+      <div style="font-size:10px;color:var(--text3);">IntelliRigs AI</div>
+    </div>
+    <div class="rp-scroll" id="aiPanel"></div>
+    <div class="rp-input">
+      <textarea class="rp-textarea" placeholder="Ask about this component…" id="aiInput"></textarea>
+      <button class="rp-send" onclick="sendAiQuery()">→</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sb-item"><div class="sb-dot" style="background:var(--green)"></div>System Online</div>
+  <div class="sb-item"><div class="sb-dot" style="background:var(--accent)"></div>AI Active</div>
+  <div class="sb-item">WD: 4,218 ft</div>
+  <div class="sb-item">ROP: 68 ft/hr</div>
+  <div class="sb-item">ECD: 12.4 ppg</div>
+  <div class="sb-item" style="margin-left:auto;">IntelliMedia Networks, Inc. · IntelliRigs v2.0 · platform@intellirigs.com</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+const DOMAINS = [
+  {
+    id:'drilling', name:'Drilling Control', color:'#1098D0', open:true,
+    devices:[
+      {id:'d1',name:'Top Drive',status:'ok',val:'82 RPM'},
+      {id:'d2',name:'Drawworks',status:'ok',val:'4218 ft'},
+      {id:'d3',name:'Rotary Table',status:'warn',val:'WARN',note:'Torque spike'},
+    ]
+  },
+  {
+    id:'wellcontrol', name:'Well Control', color:'#EF4444', open:false,
+    devices:[
+      {id:'w1',name:'BOP Stack',status:'ok',val:'CLOSED'},
+      {id:'w2',name:'Choke Manifold',status:'ok',val:'1450 psi'},
+      {id:'w3',name:'Pit Volume',status:'alarm',val:'ALARM',note:'+2.4 bbl gain'},
+    ]
+  },
+  {
+    id:'mud', name:'Mud & PVT', color:'#A855F7', open:false,
+    devices:[
+      {id:'m1',name:'Mud Pump #1',status:'ok',val:'1,180 psi'},
+      {id:'m2',name:'Mud Pump #2',status:'ok',val:'1,195 psi'},
+      {id:'m3',name:'Shale Shaker',status:'ok',val:'RUN'},
+      {id:'m4',name:'Centrifugal Pump',status:'ok',val:'320 gpm'},
+    ]
+  },
+  {
+    id:'safety', name:'Safety & F/G', color:'#F59E0B', open:false,
+    devices:[
+      {id:'s1',name:'Gas Detector Z-3A',status:'alarm',val:'18% LEL'},
+      {id:'s2',name:'H2S Monitor',status:'ok',val:'0 ppm'},
+      {id:'s3',name:'ESD System',status:'ok',val:'ARMED'},
+    ]
+  },
+  {
+    id:'power', name:'Power & Electrical', color:'#22C55E', open:false,
+    devices:[
+      {id:'p1',name:'Gen Set 1',status:'ok',val:'1,840 kW'},
+      {id:'p2',name:'Gen Set 2',status:'ok',val:'1,620 kW'},
+      {id:'p3',name:'VFD Drive A',status:'ok',val:'78%'},
+    ]
+  },
+  {
+    id:'marine', name:'Marine / DP', color:'#06B6D4', open:false,
+    devices:[
+      {id:'ma1',name:'DP System',status:'ok',val:'DP2'},
+      {id:'ma2',name:'Thrusters',status:'ok',val:'6/6'},
+      {id:'ma3',name:'BOP Riser',status:'ok',val:'LOCKED'},
+    ]
+  },
+];
+
+const AI_ALERTS = [
+  {
+    sev:'alarm', title:'Probable Influx Detected',
+    time:'2 min ago',
+    body:'Pit volume gain +2.4 bbl. Gas detector Zone-3A at 18% LEL. Standpipe pressure elevated +270 psi. Cross-domain correlation: HIGH CONFIDENCE.',
+    actions:['Flow Check','Notify OIM','Acknowledge']
+  },
+  {
+    sev:'warn', title:'Rotary Table Torque Anomaly',
+    time:'14 min ago',
+    body:'Torque spike pattern detected similar to Case Titan-2024-0209. Possible packoff building. Recommend back-reaming survey.',
+    actions:['View Case','Acknowledge']
+  },
+  {
+    sev:'info', title:'Mud Pump #1 Liner Wear Trend',
+    time:'1 hr ago',
+    body:'Liner wear estimated at 73% of service life based on stroke count and pressure variance. Recommend maintenance window planning.',
+    actions:['View Trend','Schedule PM']
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function buildSidebar() {
+  const el = document.getElementById('sidebarContent');
+  el.innerHTML = DOMAINS.map(d => `
+    <div class="domain-group">
+      <div class="domain-header${d.open?' active':''}" onclick="toggleDomain('${d.id}')">
+        <div class="domain-dot" style="background:${d.color}"></div>
+        <div class="domain-name">${d.name}</div>
+        <div class="domain-count">${d.devices.length}</div>
+        <div class="domain-chevron${d.open?' open':''}">▶</div>
+      </div>
+      <div class="device-list${d.open?' open':''}">
+        ${d.devices.map(dev => `
+          <div class="device-item" id="dev-${dev.id}" onclick="selectDevice('${dev.id}')">
+            <div class="device-status" style="background:${dev.status==='ok'?'var(--green)':dev.status==='warn'?'var(--amber)':'var(--red)'}"></div>
+            <div class="device-name">${dev.name}</div>
+            <div class="device-val ${dev.status}">${dev.val}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleDomain(id) {
+  const d = DOMAINS.find(x=>x.id===id);
+  d.open = !d.open;
+  buildSidebar();
+}
+
+function selectDevice(id) {
+  document.querySelectorAll('.device-item').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('dev-'+id)?.classList.add('selected');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI PANEL
+// ═══════════════════════════════════════════════════════════════
+function buildAiPanel() {
+  const el = document.getElementById('aiPanel');
+  el.innerHTML = AI_ALERTS.map(a => `
+    <div class="alert-card ${a.sev}">
+      <div class="ac-header">
+        <span class="ac-badge ${a.sev}">${a.sev}</span>
+        <span class="ac-time">${a.time}</span>
+      </div>
+      <div class="ac-title">${a.title}</div>
+      <div class="ac-body">${a.body}</div>
+      <div class="ac-actions">
+        ${a.actions.map((act,i)=>`<button class="ac-btn${i===0?' primary':''}">${act}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SVG DEVICE DIAGRAMS
+// ═══════════════════════════════════════════════════════════════
+
+const DEVICES = {
+
+  // ─────────────────────────────────────────────────────────────
+  'mud-pump': {
+    title: 'Triplex Mud Pump — Pump #1',
+    w: 680, h: 520,
+    kpis: [
+      {key:'Pump Pressure',val:'1,180',unit:'psi',cls:'ok'},
+      {key:'SPM',val:'62',unit:'strokes/min',cls:'ok'},
+      {key:'Flow Rate',val:'18.4',unit:'bbl/min',cls:'ok'},
+      {key:'Liner Size',val:'6.5',unit:'in',cls:'ok'},
+      {key:'Fluid Temp',val:'92',unit:'°F',cls:'ok'},
+      {key:'Liner Wear',val:'73%',unit:'life',cls:'warn'},
+    ],
+    svg: `
+      <!-- Background grid -->
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d2a45" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="680" height="520" fill="url(#grid)"/>
+
+      <!-- Title -->
+      <text x="340" y="28" text-anchor="middle" class="svg-label-title">Triplex Mud Pump</text>
+      <text x="340" y="44" text-anchor="middle" class="svg-label" style="font-size:10px;fill:#4A7A9F">Pump #1 — Neptune Star · Drilling Domain</text>
+
+      <!-- ── MAIN PUMP BODY ── -->
+      <!-- Fluid end housing (left) -->
+      <rect x="80" y="140" width="200" height="220" rx="8" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="180" y="162" text-anchor="middle" class="svg-label-bold">Fluid End</text>
+
+      <!-- Power end housing (right) -->
+      <rect x="330" y="155" width="220" height="190" rx="8" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="440" y="177" text-anchor="middle" class="svg-label-bold">Power End</text>
+
+      <!-- Connecting rod housing (bridge) -->
+      <rect x="280" y="195" width="54" height="110" rx="4" fill="#0a1e30" stroke="#1A3A60" stroke-width="1"/>
+
+      <!-- THREE CYLINDERS (triplex) -->
+      <!-- Cylinder 1 -->
+      <rect x="90" y="170" width="52" height="80" rx="4" fill="#0a2438" stroke="#224878" stroke-width="1.5"/>
+      <ellipse cx="116" cy="170" rx="26" ry="10" fill="#0d2a42" stroke="#224878" stroke-width="1.5"/>
+      <text x="116" y="263" text-anchor="middle" class="svg-label" style="font-size:10px">Cyl. 1</text>
+      <!-- Cylinder 2 -->
+      <rect x="152" y="170" width="52" height="80" rx="4" fill="#0a2438" stroke="#224878" stroke-width="1.5"/>
+      <ellipse cx="178" cy="170" rx="26" ry="10" fill="#0d2a42" stroke="#224878" stroke-width="1.5"/>
+      <text x="178" y="263" text-anchor="middle" class="svg-label" style="font-size:10px">Cyl. 2</text>
+      <!-- Cylinder 3 -->
+      <rect x="214" y="170" width="52" height="80" rx="4" fill="#0a2438" stroke="#224878" stroke-width="1.5"/>
+      <ellipse cx="240" cy="170" rx="26" ry="10" fill="#0d2a42" stroke="#224878" stroke-width="1.5"/>
+      <text x="240" y="263" text-anchor="middle" class="svg-label" style="font-size:10px">Cyl. 3</text>
+
+      <!-- Pistons (visible through cylinders) -->
+      <rect x="100" y="210" width="32" height="28" rx="3" fill="#1098D0" opacity="0.7"/>
+      <rect x="162" y="195" width="32" height="28" rx="3" fill="#1098D0" opacity="0.7"/>
+      <rect x="224" y="222" width="32" height="28" rx="3" fill="#1098D0" opacity="0.7"/>
+
+      <!-- Connecting rods -->
+      <line x1="116" y1="250" x2="290" y2="240" stroke="#224878" stroke-width="3"/>
+      <line x1="178" y1="250" x2="310" y2="248" stroke="#224878" stroke-width="3"/>
+      <line x1="240" y1="250" x2="295" y2="258" stroke="#224878" stroke-width="3"/>
+
+      <!-- Crankshaft circle -->
+      <ellipse cx="440" cy="252" rx="55" ry="55" fill="none" stroke="#1A3A60" stroke-width="2"/>
+      <ellipse cx="440" cy="252" rx="28" ry="28" fill="#0a2438" stroke="#224878" stroke-width="1.5"/>
+      <text x="440" y="256" text-anchor="middle" class="svg-label" style="font-size:9px">Crankshaft</text>
+      <!-- Crank throws -->
+      <line x1="440" y1="224" x2="440" y2="197" stroke="#1098D0" stroke-width="3"/>
+      <line x1="468" y1="272" x2="493" y2="290" stroke="#1098D0" stroke-width="3"/>
+      <line x1="412" y1="272" x2="387" y2="290" stroke="#1098D0" stroke-width="3"/>
+      <circle cx="440" cy="197" r="5" fill="#1098D0"/>
+      <circle cx="493" cy="290" r="5" fill="#1098D0"/>
+      <circle cx="387" cy="290" r="5" fill="#1098D0"/>
+
+      <!-- Crossheads -->
+      <rect x="285" y="225" width="42" height="14" rx="3" fill="#162d46" stroke="#224878"/>
+      <rect x="285" y="241" width="42" height="14" rx="3" fill="#162d46" stroke="#224878"/>
+      <rect x="285" y="257" width="42" height="14" rx="3" fill="#162d46" stroke="#224878"/>
+
+      <!-- Gear reduction box -->
+      <rect x="535" y="200" width="80" height="100" rx="6" fill="#0a1e30" stroke="#224878" stroke-width="1.5"/>
+      <text x="575" y="243" text-anchor="middle" class="svg-label-bold" style="font-size:10px">Gear</text>
+      <text x="575" y="257" text-anchor="middle" class="svg-label-bold" style="font-size:10px">Reduction</text>
+      <!-- Gear teeth indication -->
+      <circle cx="556" cy="250" r="18" fill="none" stroke="#1A3A60" stroke-width="1"/>
+      <circle cx="594" cy="250" r="14" fill="none" stroke="#1A3A60" stroke-width="1"/>
+      <line x1="510" y1="250" x2="535" y2="250" stroke="#224878" stroke-width="3"/>
+
+      <!-- Motor (far right, off-canvas indicator) -->
+      <rect x="623" y="225" width="40" height="50" rx="5" fill="#0e2840" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="643" y="247" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#1098D0">AC</text>
+      <text x="643" y="260" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#1098D0">Motor</text>
+
+      <!-- Discharge manifold (top) -->
+      <rect x="90" y="120" width="196" height="24" rx="5" fill="#0d2a42" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="188" y="135" text-anchor="middle" class="svg-label-bold" style="fill:#1098D0">Discharge Manifold</text>
+      <!-- Discharge pipe going up -->
+      <rect x="170" y="80" width="24" height="42" rx="3" fill="#0a2438" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="208" y="98" class="svg-label" style="font-size:10px">To Standpipe</text>
+      <line x1="194" y1="98" x2="213" y2="98" stroke="#4A7A9F" stroke-width="0.5" stroke-dasharray="3,3"/>
+
+      <!-- Pressure gauge on discharge -->
+      <circle cx="280" cy="108" r="16" fill="#0a1e30" stroke="#F59E0B" stroke-width="2"/>
+      <text x="280" y="105" text-anchor="middle" class="svg-value" style="font-size:9px">1,180</text>
+      <text x="280" y="118" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#F59E0B">psi</text>
+
+      <!-- Suction manifold (bottom) -->
+      <rect x="90" y="362" width="196" height="24" rx="5" fill="#0d2a42" stroke="#224878" stroke-width="1.5"/>
+      <text x="188" y="377" text-anchor="middle" class="svg-label-bold">Suction Manifold</text>
+      <rect x="170" y="386" width="24" height="36" rx="3" fill="#0a2438" stroke="#224878" stroke-width="1.5"/>
+      <text x="208" y="408" class="svg-label" style="font-size:10px">From Pits</text>
+      <line x1="194" y1="405" x2="213" y2="405" stroke="#4A7A9F" stroke-width="0.5" stroke-dasharray="3,3"/>
+
+      <!-- Valve covers -->
+      <circle cx="100" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <circle cx="130" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <circle cx="160" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <circle cx="190" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <circle cx="220" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <circle cx="250" cy="340" r="10" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <text x="175" y="356" text-anchor="middle" class="svg-label" style="font-size:9px">Valve Covers</text>
+
+      <!-- Pulsation dampener -->
+      <ellipse cx="358" cy="108" rx="32" ry="22" fill="#0a1e30" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="358" y="105" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#22C55E">Pulsation</text>
+      <text x="358" y="117" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#22C55E">Dampener</text>
+      <line x1="194" y1="108" x2="326" y2="108" stroke="#22C55E" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+      <!-- Liner wear indicator -->
+      <rect x="460" y="388" width="100" height="20" rx="4" fill="#162d46" stroke="#F59E0B" stroke-width="1"/>
+      <rect x="460" y="388" width="73" height="20" rx="4" fill="#F59E0B" opacity="0.6"/>
+      <text x="510" y="400" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#F59E0B">Liner: 73% worn</text>
+
+      <!-- SPM counter -->
+      <rect x="460" y="415" width="100" height="22" rx="4" fill="#0a1e30" stroke="#1A3A60"/>
+      <text x="480" y="429" class="svg-label" style="font-size:9px">SPM:</text>
+      <text x="520" y="429" class="svg-value" style="font-size:11px">62</text>
+
+      <!-- ── DIMENSION / LEADER LABELS ── -->
+      <!-- Fluid end label -->
+      <line x1="80" y1="430" x2="80" y2="460" class="leader"/>
+      <line x1="280" y1="430" x2="280" y2="460" class="leader"/>
+      <line x1="80" y1="460" x2="280" y2="460" class="leader"/>
+      <text x="180" y="475" text-anchor="middle" class="svg-label" style="font-size:10px">Fluid End Assembly</text>
+
+      <!-- Power end label -->
+      <line x1="330" y1="430" x2="330" y2="460" class="leader"/>
+      <line x1="550" y1="430" x2="550" y2="460" class="leader"/>
+      <line x1="330" y1="460" x2="550" y2="460" class="leader"/>
+      <text x="440" y="475" text-anchor="middle" class="svg-label" style="font-size:10px">Power End Assembly</text>
+
+      <!-- Status indicator -->
+      <circle cx="640" cy="140" r="8" fill="#00D68A"/>
+      <text x="626" y="143" text-anchor="end" class="svg-label" style="fill:#00D68A;font-size:10px">RUNNING</text>
+    `
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  'bop': {
+    title: 'BOP Stack',
+    w: 560, h: 560,
+    kpis: [
+      {key:'Stack Status',val:'CLOSED',unit:'',cls:'ok'},
+      {key:'Wellbore Press',val:'3,420',unit:'psi',cls:'ok'},
+      {key:'Annular Press',val:'1,250',unit:'psi',cls:'ok'},
+      {key:'Ram Position',val:'OPEN',unit:'',cls:'ok'},
+      {key:'Control Fluid',val:'3,000',unit:'psi acc',cls:'ok'},
+      {key:'Stack Temp',val:'88',unit:'°F',cls:'ok'},
+    ],
+    svg: `
+      <defs>
+        <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d2a45" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="560" height="560" fill="url(#grid2)"/>
+
+      <text x="280" y="28" text-anchor="middle" class="svg-label-title">BOP Stack</text>
+      <text x="280" y="44" text-anchor="middle" class="svg-label" style="font-size:10px;fill:#4A7A9F">5,000 PSI WP · 18¾ in · Neptune Star</text>
+
+      <!-- ── STACK BORE (centre line) ── -->
+      <line x1="280" y1="60" x2="280" y2="500" stroke="#1A3A60" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="200" y="520" class="svg-label" style="font-size:9px">Wellbore Centreline →</text>
+
+      <!-- DRILL PIPE (inside) -->
+      <rect x="268" y="60" width="24" height="440" fill="none" stroke="#1098D0" stroke-width="1.5" stroke-dasharray="8,4" opacity="0.4"/>
+
+      <!-- ── 1. ANNULAR BOP (top) ── -->
+      <!-- Body -->
+      <ellipse cx="280" cy="110" rx="90" ry="40" fill="#0e2840" stroke="#1A3A60" stroke-width="2"/>
+      <rect x="190" y="110" width="180" height="60" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <ellipse cx="280" cy="170" rx="90" ry="22" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <!-- Packing element -->
+      <ellipse cx="280" cy="140" rx="54" ry="26" fill="#162d46" stroke="#F59E0B" stroke-width="1.5"/>
+      <text x="280" y="143" text-anchor="middle" class="svg-label-bold" style="font-size:10px;fill:#F59E0B">Packing Element</text>
+      <!-- Label -->
+      <line x1="190" y1="130" x2="130" y2="108" class="leader"/>
+      <text x="124" y="106" text-anchor="end" class="svg-label-bold">Annular BOP</text>
+      <text x="124" y="118" text-anchor="end" class="svg-label" style="font-size:9px">Type: Hydril GK 13⅝</text>
+      <!-- Hydraulic ports -->
+      <rect x="190" y="125" width="20" height="10" rx="3" fill="#0a1e30" stroke="#224878"/>
+      <rect x="350" y="125" width="20" height="10" rx="3" fill="#0a1e30" stroke="#224878"/>
+      <line x1="170" y1="130" x2="190" y2="130" stroke="#224878" stroke-width="2"/>
+      <line x1="370" y1="130" x2="390" y2="130" stroke="#224878" stroke-width="2"/>
+
+      <!-- ── 2. UPPER PIPE RAMS ── -->
+      <rect x="195" y="190" width="170" height="60" rx="4" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <!-- Left ram -->
+      <rect x="205" y="200" width="52" height="40" rx="4" fill="#162d46" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="231" y="223" text-anchor="middle" class="svg-label" style="font-size:9px">Ram L</text>
+      <!-- Right ram -->
+      <rect x="303" y="200" width="52" height="40" rx="4" fill="#162d46" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="329" y="223" text-anchor="middle" class="svg-label" style="font-size:9px">Ram R</text>
+      <!-- Open gap -->
+      <rect x="257" y="205" width="46" height="30" fill="#071828" stroke="#1098D0" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <text x="280" y="223" text-anchor="middle" class="svg-value" style="font-size:9px">OPEN</text>
+      <!-- Actuator arms -->
+      <line x1="175" y1="220" x2="205" y2="220" stroke="#1098D0" stroke-width="3"/>
+      <line x1="355" y1="220" x2="385" y2="220" stroke="#1098D0" stroke-width="3"/>
+      <rect x="155" y="212" width="22" height="16" rx="3" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <rect x="383" y="212" width="22" height="16" rx="3" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <!-- Label -->
+      <line x1="195" y1="200" x2="130" y2="190" class="leader"/>
+      <text x="124" y="188" text-anchor="end" class="svg-label-bold">Upper Pipe Rams</text>
+      <text x="124" y="200" text-anchor="end" class="svg-label" style="font-size:9px">Status: OPEN</text>
+
+      <!-- ── 3. BLIND/SHEAR RAMS ── -->
+      <rect x="195" y="268" width="170" height="60" rx="4" fill="#0e2840" stroke="#EF4444" stroke-width="1.5"/>
+      <rect x="205" y="278" width="52" height="40" rx="4" fill="#1a0a10" stroke="#EF4444" stroke-width="1.5"/>
+      <text x="231" y="300" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#EF4444">Shear L</text>
+      <rect x="303" y="278" width="52" height="40" rx="4" fill="#1a0a10" stroke="#EF4444" stroke-width="1.5"/>
+      <text x="329" y="300" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#EF4444">Shear R</text>
+      <rect x="257" y="283" width="46" height="30" fill="#071828" stroke="#EF4444" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <text x="280" y="301" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#EF4444">BSR OPEN</text>
+      <line x1="175" y1="298" x2="205" y2="298" stroke="#EF4444" stroke-width="3"/>
+      <line x1="355" y1="298" x2="385" y2="298" stroke="#EF4444" stroke-width="3"/>
+      <rect x="155" y="290" width="22" height="16" rx="3" fill="#1a0a10" stroke="#EF4444" stroke-width="1.5"/>
+      <rect x="383" y="290" width="22" height="16" rx="3" fill="#1a0a10" stroke="#EF4444" stroke-width="1.5"/>
+      <line x1="195" y1="285" x2="130" y2="268" class="leader"/>
+      <text x="124" y="266" text-anchor="end" class="svg-label-bold" style="fill:#EF4444">Blind / Shear Rams</text>
+      <text x="124" y="278" text-anchor="end" class="svg-label" style="font-size:9px;fill:#EF4444">Emergency closure</text>
+
+      <!-- ── 4. LOWER PIPE RAMS ── -->
+      <rect x="195" y="346" width="170" height="60" rx="4" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <rect x="205" y="356" width="52" height="40" rx="4" fill="#162d46" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="231" y="379" text-anchor="middle" class="svg-label" style="font-size:9px">Ram L</text>
+      <rect x="303" y="356" width="52" height="40" rx="4" fill="#162d46" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="329" y="379" text-anchor="middle" class="svg-label" style="font-size:9px">Ram R</text>
+      <rect x="257" y="361" width="46" height="30" fill="#071828" stroke="#1098D0" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <text x="280" y="379" text-anchor="middle" class="svg-value" style="font-size:9px">OPEN</text>
+      <line x1="175" y1="376" x2="205" y2="376" stroke="#1098D0" stroke-width="3"/>
+      <line x1="355" y1="376" x2="385" y2="376" stroke="#1098D0" stroke-width="3"/>
+      <rect x="155" y="368" width="22" height="16" rx="3" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <rect x="383" y="368" width="22" height="16" rx="3" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <line x1="195" y1="370" x2="130" y2="355" class="leader"/>
+      <text x="124" y="353" text-anchor="end" class="svg-label-bold">Lower Pipe Rams</text>
+      <text x="124" y="365" text-anchor="end" class="svg-label" style="font-size:9px">Status: OPEN</text>
+
+      <!-- ── 5. SPOOL / KILL & CHOKE LINES ── -->
+      <rect x="205" y="422" width="150" height="36" rx="4" fill="#0a1e30" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="280" y="443" text-anchor="middle" class="svg-label-bold" style="fill:#22C55E;font-size:10px">Kill / Choke Spool</text>
+      <!-- Kill line left -->
+      <line x1="175" y1="440" x2="205" y2="440" stroke="#22C55E" stroke-width="2"/>
+      <rect x="148" y="432" width="28" height="16" rx="3" fill="#071828" stroke="#22C55E"/>
+      <text x="162" y="443" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#22C55E">Kill</text>
+      <!-- Choke line right -->
+      <line x1="355" y1="440" x2="385" y2="440" stroke="#A855F7" stroke-width="2"/>
+      <rect x="385" y="432" width="28" height="16" rx="3" fill="#071828" stroke="#A855F7"/>
+      <text x="399" y="443" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#A855F7">Choke</text>
+      <line x1="355" y1="430" x2="440" y2="418" class="leader"/>
+      <text x="444" y="416" class="svg-label-bold" style="font-size:10px">Choke Line</text>
+      <text x="444" y="428" class="svg-label" style="font-size:9px">1,450 psi</text>
+
+      <!-- ── WELLHEAD connector bottom ── -->
+      <rect x="230" y="464" width="100" height="20" rx="4" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="280" y="477" text-anchor="middle" class="svg-label" style="font-size:9px">Wellhead Connector</text>
+
+      <!-- Wellbore pressure gauge -->
+      <circle cx="440" cy="250" r="22" fill="#0a1e30" stroke="#1098D0" stroke-width="2"/>
+      <text x="440" y="245" text-anchor="middle" class="svg-value" style="font-size:11px">3,420</text>
+      <text x="440" y="262" text-anchor="middle" class="svg-label" style="font-size:8px">psi wellbore</text>
+      <line x1="365" y1="295" x2="418" y2="260" class="leader"/>
+
+      <!-- Accumulator pressure (right) -->
+      <rect x="430" y="340" width="90" height="36" rx="5" fill="#0a1e30" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="475" y="354" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#22C55E">Accumulator</text>
+      <text x="475" y="368" text-anchor="middle" class="svg-value" style="fill:#22C55E">3,000 psi</text>
+      <line x1="385" y1="376" x2="430" y2="358" class="leader"/>
+
+      <!-- Status -->
+      <circle cx="530" cy="80" r="8" fill="#00D68A"/>
+      <text x="518" y="83" text-anchor="end" class="svg-label" style="fill:#00D68A;font-size:10px">NOMINAL</text>
+    `
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  'top-drive': {
+    title: 'Top Drive System',
+    w: 520, h: 540,
+    kpis: [
+      {key:'Speed',val:'82',unit:'RPM',cls:'ok'},
+      {key:'Torque',val:'28,400',unit:'ft-lbf',cls:'warn'},
+      {key:'WOB',val:'42,000',unit:'lbs',cls:'ok'},
+      {key:'Mud Motor Flow',val:'780',unit:'gpm',cls:'ok'},
+      {key:'Motor Temp',val:'104',unit:'°F',cls:'ok'},
+      {key:'Rail Load',val:'380',unit:'kips',cls:'ok'},
+    ],
+    svg: `
+      <defs>
+        <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d2a45" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="520" height="540" fill="url(#grid3)"/>
+
+      <text x="260" y="28" text-anchor="middle" class="svg-label-title">Top Drive System</text>
+      <text x="260" y="44" text-anchor="middle" class="svg-label" style="font-size:10px;fill:#4A7A9F">1,500 HP AC · Neptune Star</text>
+
+      <!-- Derrick rails (vertical guides) -->
+      <rect x="110" y="55" width="14" height="460" rx="3" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <rect x="396" y="55" width="14" height="460" rx="3" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <!-- Rail labels -->
+      <line x1="110" y1="75" x2="70" y2="65" class="leader"/>
+      <text x="64" y="63" text-anchor="end" class="svg-label-bold">Derrick Guide Rails</text>
+      <!-- Rail rollers (left) -->
+      <circle cx="117" cy="200" r="8" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <circle cx="117" cy="320" r="8" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <circle cx="403" cy="200" r="8" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <circle cx="403" cy="320" r="8" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+
+      <!-- Travelling block / bail adapter (top) -->
+      <rect x="190" y="55" width="140" height="50" rx="6" fill="#0e2840" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="260" y="83" text-anchor="middle" class="svg-label-bold">Travelling Block / Bail</text>
+      <!-- Hook line -->
+      <line x1="260" y1="40" x2="260" y2="55" stroke="#224878" stroke-width="3"/>
+      <text x="260" y="36" text-anchor="middle" class="svg-label" style="font-size:9px">Crown Block →</text>
+
+      <!-- Main gearbox / motor housing -->
+      <rect x="160" y="120" width="200" height="140" rx="8" fill="#0e2840" stroke="#224878" stroke-width="2"/>
+      <text x="260" y="148" text-anchor="middle" class="svg-label-bold">AC Motor / Gearbox</text>
+      <!-- Motor internals suggestion -->
+      <ellipse cx="220" cy="190" rx="34" ry="34" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <ellipse cx="300" cy="190" rx="24" ry="24" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="220" y="186" text-anchor="middle" class="svg-label" style="font-size:8px">AC</text>
+      <text x="220" y="197" text-anchor="middle" class="svg-label" style="font-size:8px">Motor</text>
+      <text x="300" y="193" text-anchor="middle" class="svg-label" style="font-size:8px">Gear</text>
+      <!-- Speed/torque display -->
+      <rect x="340" y="165" width="72" height="44" rx="4" fill="#071828" stroke="#F59E0B" stroke-width="1"/>
+      <text x="376" y="183" text-anchor="middle" class="svg-value" style="font-size:14px;fill:#F59E0B">82</text>
+      <text x="376" y="197" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#F59E0B">RPM</text>
+      <!-- Label -->
+      <line x1="160" y1="165" x2="100" y2="155" class="leader"/>
+      <text x="94" y="153" text-anchor="end" class="svg-label-bold">Motor Assembly</text>
+      <text x="94" y="165" text-anchor="end" class="svg-label" style="font-size:9px">1,500 HP / 3,300V AC</text>
+
+      <!-- Top sub / rotary seal -->
+      <rect x="218" y="274" width="84" height="28" rx="5" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <text x="260" y="291" text-anchor="middle" class="svg-label-bold" style="font-size:10px">Rotary Seal / Top Sub</text>
+      <line x1="218" y1="284" x2="155" y2="278" class="leader"/>
+      <text x="149" y="276" text-anchor="end" class="svg-label-bold">Rotary Seal</text>
+      <text x="149" y="288" text-anchor="end" class="svg-label" style="font-size:9px">Pressure rated 7,500 psi</text>
+
+      <!-- Swivel / mud delivery -->
+      <rect x="230" y="316" width="60" height="38" rx="5" fill="#0a1e30" stroke="#A855F7" stroke-width="1.5"/>
+      <text x="260" y="331" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#A855F7">Swivel /</text>
+      <text x="260" y="344" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#A855F7">Mud Drop</text>
+      <!-- Mud hose -->
+      <line x1="260" y1="316" x2="260" y2="290" stroke="#A855F7" stroke-width="2" stroke-dasharray="4,2"/>
+      <line x1="420" y1="316" x2="420" y2="200" stroke="#A855F7" stroke-width="2" stroke-dasharray="4,2"/>
+      <line x1="290" y1="335" x2="420" y2="316" stroke="#A855F7" stroke-width="2" stroke-dasharray="4,2"/>
+      <text x="430" y="260" class="svg-label" style="font-size:9px;fill:#A855F7">Mud Hose</text>
+      <text x="430" y="272" class="svg-label" style="font-size:9px;fill:#A855F7">780 gpm</text>
+
+      <!-- IBOP (Kelly valve / IBOP) -->
+      <rect x="226" y="368" width="68" height="30" rx="5" fill="#162d46" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="260" y="385" text-anchor="middle" class="svg-label-bold" style="fill:#22C55E;font-size:10px">IBOP / Kelly Valve</text>
+      <line x1="226" y1="380" x2="155" y2="372" class="leader"/>
+      <text x="149" y="370" text-anchor="end" class="svg-label-bold" style="fill:#22C55E">IBOP</text>
+      <text x="149" y="382" text-anchor="end" class="svg-label" style="font-size:9px">Status: OPEN</text>
+
+      <!-- Drive stem / saver sub -->
+      <rect x="244" y="412" width="32" height="50" rx="4" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="295" y="440" class="svg-label" style="font-size:9px">Drive Stem /</text>
+      <text x="295" y="452" class="svg-label" style="font-size:9px">Saver Sub</text>
+      <line x1="276" y1="440" x2="294" y2="440" class="leader"/>
+
+      <!-- Torque gauge (right side) -->
+      <circle cx="430" cy="420" r="28" fill="#0a1e30" stroke="#F59E0B" stroke-width="2"/>
+      <text x="430" y="414" text-anchor="middle" class="svg-value" style="font-size:12px;fill:#F59E0B">28.4k</text>
+      <text x="430" y="430" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#F59E0B">ft-lbf</text>
+      <text x="430" y="441" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#F59E0B">TORQUE</text>
+      <line x1="294" y1="437" x2="402" y2="420" class="leader"/>
+
+      <!-- Safety sling / TDS guide frame -->
+      <rect x="140" y="130" width="22" height="130" rx="4" fill="#071828" stroke="#1A3A60" stroke-width="1"/>
+      <rect x="358" y="130" width="22" height="130" rx="4" fill="#071828" stroke="#1A3A60" stroke-width="1"/>
+      <text x="88" y="198" text-anchor="end" class="svg-label" style="font-size:9px">Guide Frame</text>
+      <line x1="140" y1="195" x2="95" y2="195" class="leader"/>
+
+      <!-- WOB indicator (left) -->
+      <rect x="55" y="380" width="88" height="40" rx="5" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="99" y="396" text-anchor="middle" class="svg-label" style="font-size:9px">WOB</text>
+      <text x="99" y="412" text-anchor="middle" class="svg-value">42k lbs</text>
+
+      <!-- Status -->
+      <circle cx="498" cy="80" r="8" fill="#F59E0B"/>
+      <text x="486" y="83" text-anchor="end" class="svg-label" style="fill:#F59E0B;font-size:10px">TORQUE HI</text>
+    `
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  'drawworks': {
+    title: 'Drawworks',
+    w: 640, h: 480,
+    kpis: [
+      {key:'Hook Load',val:'380',unit:'kips',cls:'ok'},
+      {key:'Block Speed',val:'2.4',unit:'ft/s',cls:'ok'},
+      {key:'Drum Brake',val:'RELEASED',unit:'',cls:'ok'},
+      {key:'Line Pull',val:'52',unit:'kips/line',cls:'ok'},
+      {key:'Depth',val:'4,218',unit:'ft',cls:'ok'},
+      {key:'Motor Load',val:'68',unit:'%',cls:'ok'},
+    ],
+    svg: `
+      <defs>
+        <pattern id="grid4" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d2a45" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="640" height="480" fill="url(#grid4)"/>
+
+      <text x="320" y="28" text-anchor="middle" class="svg-label-title">Drawworks</text>
+      <text x="320" y="44" text-anchor="middle" class="svg-label" style="font-size:10px;fill:#4A7A9F">3,000 HP AC VFD · Neptune Star</text>
+
+      <!-- Main drawworks bed frame -->
+      <rect x="60" y="130" width="520" height="240" rx="10" fill="#0e2840" stroke="#1A3A60" stroke-width="2"/>
+
+      <!-- DRUM (centre) -->
+      <ellipse cx="230" cy="250" rx="95" ry="95" fill="#0a1e30" stroke="#224878" stroke-width="2"/>
+      <ellipse cx="230" cy="250" rx="70" ry="70" fill="#071828" stroke="#1A3A60" stroke-width="1.5"/>
+      <ellipse cx="230" cy="250" rx="30" ry="30" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <!-- Drum flanges -->
+      <ellipse cx="200" cy="250" rx="15" ry="95" fill="#0e2840" stroke="#224878" stroke-width="1.5"/>
+      <ellipse cx="260" cy="250" rx="15" ry="95" fill="#0e2840" stroke="#224878" stroke-width="1.5"/>
+      <!-- Drill line wraps (suggestive helical) -->
+      <path d="M 165 175 Q 230 165 295 175 Q 230 185 165 195 Q 230 205 295 215 Q 230 225 165 235" fill="none" stroke="#1098D0" stroke-width="2" opacity="0.6"/>
+      <!-- Drum shaft -->
+      <line x1="200" y1="250" x2="80" y2="250" stroke="#224878" stroke-width="6"/>
+      <line x1="260" y1="250" x2="500" y2="250" stroke="#224878" stroke-width="6"/>
+      <!-- Label -->
+      <line x1="230" y1="155" x2="230" y2="110" class="leader"/>
+      <text x="230" y="106" text-anchor="middle" class="svg-label-bold">Hoisting Drum</text>
+      <text x="230" y="118" text-anchor="middle" class="svg-label" style="font-size:9px">Wire rope storage</text>
+
+      <!-- DISC BRAKE (left of drum) -->
+      <rect x="68" y="210" width="50" height="80" rx="5" fill="#1a0a10" stroke="#EF4444" stroke-width="1.5"/>
+      <rect x="74" y="218" width="38" height="64" rx="3" fill="#2a0c0c" stroke="#EF4444" stroke-width="1"/>
+      <text x="93" y="265" text-anchor="middle" class="svg-label" style="fill:#EF4444;font-size:9px">Disc</text>
+      <text x="93" y="277" text-anchor="middle" class="svg-label" style="fill:#EF4444;font-size:9px">Brake</text>
+      <line x1="68" y1="250" x2="40" y2="240" class="leader"/>
+      <text x="34" y="238" text-anchor="end" class="svg-label-bold" style="fill:#EF4444">Disc Brake</text>
+      <text x="34" y="250" text-anchor="end" class="svg-label" style="font-size:9px;fill:#EF4444">RELEASED</text>
+
+      <!-- MOTORS (right side) -->
+      <!-- Motor 1 -->
+      <rect x="420" y="165" width="80" height="60" rx="6" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="460" y="190" text-anchor="middle" class="svg-label-bold" style="fill:#1098D0;font-size:10px">AC Motor</text>
+      <text x="460" y="205" text-anchor="middle" class="svg-label" style="fill:#1098D0;font-size:9px">VFD #1</text>
+      <!-- Motor 2 -->
+      <rect x="420" y="245" width="80" height="60" rx="6" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="460" y="270" text-anchor="middle" class="svg-label-bold" style="fill:#1098D0;font-size:10px">AC Motor</text>
+      <text x="460" y="285" text-anchor="middle" class="svg-label" style="fill:#1098D0;font-size:9px">VFD #2</text>
+      <line x1="420" y1="165" x2="480" y2="140" class="leader"/>
+      <text x="486" y="138" class="svg-label-bold">Dual AC Drive Motors</text>
+      <text x="486" y="150" class="svg-label" style="font-size:9px">1,500 HP each · VFD controlled</text>
+
+      <!-- Gearbox between motors and drum -->
+      <rect x="360" y="205" width="60" height="80" rx="5" fill="#0a1e30" stroke="#224878" stroke-width="1.5"/>
+      <circle cx="370" cy="235" r="12" fill="none" stroke="#1A3A60" stroke-width="1"/>
+      <circle cx="400" cy="255" r="16" fill="none" stroke="#1A3A60" stroke-width="1"/>
+      <text x="390" y="276" text-anchor="middle" class="svg-label" style="font-size:9px">Gearbox</text>
+      <line x1="420" y1="195" x2="420" y2="245" stroke="#224878" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- Deadline anchor -->
+      <rect x="68" y="310" width="60" height="30" rx="4" fill="#162d46" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="98" y="328" text-anchor="middle" class="svg-label-bold" style="fill:#22C55E;font-size:10px">Deadline Anchor</text>
+      <line x1="128" y1="325" x2="165" y2="310" class="leader"/>
+
+      <!-- Crown saver / soft torque control panel -->
+      <rect x="490" y="140" width="110" height="70" rx="6" fill="#071828" stroke="#A855F7" stroke-width="1.5"/>
+      <text x="545" y="163" text-anchor="middle" class="svg-label-bold" style="fill:#A855F7;font-size:10px">Crown Saver /</text>
+      <text x="545" y="177" text-anchor="middle" class="svg-label" style="fill:#A855F7;font-size:10px">Soft Torque</text>
+      <text x="545" y="191" text-anchor="middle" class="svg-label" style="fill:#A855F7;font-size:9px">Control Panel</text>
+
+      <!-- Depth counter -->
+      <rect x="490" y="330" width="110" height="48" rx="6" fill="#071828" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="545" y="350" text-anchor="middle" class="svg-label" style="font-size:9px">Depth</text>
+      <text x="545" y="368" text-anchor="middle" class="svg-value" style="font-size:16px">4,218 ft</text>
+
+      <!-- Hook load gauge -->
+      <circle cx="320" cy="90" r="32" fill="#0a1e30" stroke="#1098D0" stroke-width="2"/>
+      <text x="320" y="84" text-anchor="middle" class="svg-value" style="font-size:14px">380</text>
+      <text x="320" y="100" text-anchor="middle" class="svg-label" style="font-size:8px">kips hook load</text>
+      <line x1="320" y1="122" x2="320" y2="130" class="leader"/>
+
+      <!-- Fast line / slow line labels -->
+      <line x1="325" y1="250" x2="500" y2="250" stroke="#1098D0" stroke-width="2" stroke-dasharray="5,3"/>
+      <text x="388" y="244" text-anchor="middle" class="svg-label" style="font-size:9px">Fast Line</text>
+
+      <!-- Motor load bar -->
+      <rect x="160" y="390" width="200" height="16" rx="4" fill="#162d46" stroke="#1A3A60"/>
+      <rect x="160" y="390" width="136" height="16" rx="4" fill="#1098D0" opacity="0.7"/>
+      <text x="260" y="402" text-anchor="middle" class="svg-label" style="font-size:9px">Motor Load: 68%</text>
+
+      <!-- Status -->
+      <circle cx="610" cy="80" r="8" fill="#00D68A"/>
+      <text x="598" y="83" text-anchor="end" class="svg-label" style="fill:#00D68A;font-size:10px">HOISTING</text>
+    `
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  'centrifugal': {
+    title: 'Centrifugal Pump — Mud Transfer',
+    w: 580, h: 480,
+    kpis: [
+      {key:'Flow Rate',val:'320',unit:'gpm',cls:'ok'},
+      {key:'Discharge Press',val:'85',unit:'psi',cls:'ok'},
+      {key:'Motor Speed',val:'1,780',unit:'RPM',cls:'ok'},
+      {key:'Motor Current',val:'48',unit:'A',cls:'ok'},
+      {key:'Bearing Temp',val:'138',unit:'°F',cls:'ok'},
+      {key:'Efficiency',val:'74',unit:'%',cls:'ok'},
+    ],
+    svg: `
+      <defs>
+        <pattern id="grid5" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d2a45" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="580" height="480" fill="url(#grid5)"/>
+
+      <text x="290" y="28" text-anchor="middle" class="svg-label-title">Centrifugal Pump — Mud Transfer</text>
+      <text x="290" y="44" text-anchor="middle" class="svg-label" style="font-size:10px;fill:#4A7A9F">30 HP AC · Mud System · Neptune Star</text>
+
+      <!-- BASE PLATE -->
+      <rect x="80" y="370" width="420" height="16" rx="3" fill="#0a1e30" stroke="#1A3A60" stroke-width="1.5"/>
+      <text x="290" y="400" text-anchor="middle" class="svg-label" style="font-size:9px">Common Baseplate / Skid</text>
+      <!-- Mounting bolts -->
+      <circle cx="100" cy="378" r="4" fill="#162d46" stroke="#224878"/>
+      <circle cx="140" cy="378" r="4" fill="#162d46" stroke="#224878"/>
+      <circle cx="440" cy="378" r="4" fill="#162d46" stroke="#224878"/>
+      <circle cx="480" cy="378" r="4" fill="#162d46" stroke="#224878"/>
+
+      <!-- ── MOTOR (right) ── -->
+      <rect x="340" y="210" width="160" height="140" rx="8" fill="#0e2840" stroke="#1098D0" stroke-width="2"/>
+      <text x="420" y="268" text-anchor="middle" class="svg-label-bold" style="fill:#1098D0">AC Induction</text>
+      <text x="420" y="282" text-anchor="middle" class="svg-label" style="fill:#1098D0">Motor</text>
+      <text x="420" y="296" text-anchor="middle" class="svg-label" style="font-size:9px;fill:#1098D0">30 HP · 460V</text>
+      <!-- Cooling fins suggestion -->
+      <line x1="348" y1="220" x2="348" y2="342" stroke="#224878" stroke-width="1"/>
+      <line x1="358" y1="220" x2="358" y2="342" stroke="#224878" stroke-width="1"/>
+      <line x1="368" y1="220" x2="368" y2="342" stroke="#224878" stroke-width="1"/>
+      <text x="348" y="358" text-anchor="middle" class="svg-label" style="font-size:9px">Cooling Fins</text>
+      <!-- Motor shaft -->
+      <rect x="300" y="276" width="42" height="14" rx="4" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <text x="321" y="286" text-anchor="middle" class="svg-label" style="font-size:8px">Shaft</text>
+      <!-- Label -->
+      <line x1="500" y1="250" x2="530" y2="240" class="leader"/>
+      <text x="534" y="238" class="svg-label-bold">Electric Motor</text>
+      <text x="534" y="250" class="svg-label" style="font-size:9px">1,780 RPM</text>
+
+      <!-- COUPLING -->
+      <rect x="280" y="272" width="24" height="22" rx="4" fill="#162d46" stroke="#F59E0B" stroke-width="1.5"/>
+      <text x="292" y="305" text-anchor="middle" class="svg-label" style="fill:#F59E0B;font-size:9px">Coupling</text>
+      <line x1="292" y1="294" x2="292" y2="303" class="leader"/>
+
+      <!-- ── PUMP CASING (left) ── -->
+      <!-- Volute casing (snail shell shape) -->
+      <path d="M 180 283 Q 150 240 175 200 Q 210 155 265 165 Q 315 175 315 240 Q 315 295 260 310 Q 215 320 180 283 Z"
+            fill="#0e2840" stroke="#224878" stroke-width="2"/>
+      <!-- Impeller -->
+      <circle cx="250" cy="238" r="45" fill="#071828" stroke="#1A3A60" stroke-width="1.5"/>
+      <circle cx="250" cy="238" r="20" fill="#162d46" stroke="#224878" stroke-width="1.5"/>
+      <!-- Impeller vanes (6 vanes) -->
+      <line x1="250" y1="238" x2="280" y2="200" stroke="#1098D0" stroke-width="2.5"/>
+      <line x1="250" y1="238" x2="293" y2="245" stroke="#1098D0" stroke-width="2.5"/>
+      <line x1="250" y1="238" x2="272" y2="280" stroke="#1098D0" stroke-width="2.5"/>
+      <line x1="250" y1="238" x2="220" y2="276" stroke="#1098D0" stroke-width="2.5"/>
+      <line x1="250" y1="238" x2="207" y2="231" stroke="#1098D0" stroke-width="2.5"/>
+      <line x1="250" y1="238" x2="228" y2="198" stroke="#1098D0" stroke-width="2.5"/>
+      <text x="250" y="242" text-anchor="middle" class="svg-label" style="font-size:9px">Impeller</text>
+      <!-- Volute label -->
+      <line x1="175" y1="200" x2="130" y2="175" class="leader"/>
+      <text x="124" y="173" text-anchor="end" class="svg-label-bold">Volute Casing</text>
+      <text x="124" y="185" text-anchor="end" class="svg-label" style="font-size:9px">Cast iron · 6 in class</text>
+
+      <!-- Pump shaft -->
+      <rect x="280" y="231" width="48" height="14" rx="3" fill="#162d46" stroke="#224878" stroke-width="1"/>
+      <!-- Bearing housing -->
+      <rect x="270" y="218" width="30" height="40" rx="4" fill="#0a1e30" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="285" y="250" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#22C55E">Bearing</text>
+      <line x1="270" y1="238" x2="210" y2="220" class="leader"/>
+      <text x="204" y="218" text-anchor="end" class="svg-label-bold" style="fill:#22C55E">Bearing Housing</text>
+      <text x="204" y="230" text-anchor="end" class="svg-label" style="font-size:9px">138°F · NORMAL</text>
+
+      <!-- SUCTION FLANGE (bottom / left of casing) -->
+      <rect x="88" y="220" width="70" height="36" rx="5" fill="#0a1e30" stroke="#A855F7" stroke-width="1.5"/>
+      <text x="123" y="237" text-anchor="middle" class="svg-label" style="fill:#A855F7;font-size:9px">Suction</text>
+      <text x="123" y="249" text-anchor="middle" class="svg-label" style="fill:#A855F7;font-size:9px">Flange 6 in</text>
+      <line x1="158" y1="238" x2="180" y2="270" class="leader"/>
+      <line x1="88" y1="238" x2="70" y2="228" class="leader"/>
+      <text x="64" y="226" text-anchor="end" class="svg-label-bold" style="fill:#A855F7">Suction Inlet</text>
+      <text x="64" y="238" text-anchor="end" class="svg-label" style="font-size:9px">From mud pits</text>
+      <!-- Suction arrow -->
+      <line x1="72" y1="238" x2="88" y2="238" stroke="#A855F7" stroke-width="2"/>
+      <polygon points="86,234 94,238 86,242" fill="#A855F7"/>
+
+      <!-- DISCHARGE FLANGE (top of casing) -->
+      <rect x="228" y="130" width="70" height="36" rx="5" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="263" y="147" text-anchor="middle" class="svg-label" style="fill:#1098D0;font-size:9px">Discharge</text>
+      <text x="263" y="159" text-anchor="middle" class="svg-label" style="fill:#1098D0;font-size:9px">Flange 4 in</text>
+      <!-- Discharge pipe going up -->
+      <rect x="252" y="88" width="22" height="44" rx="3" fill="#0a1e30" stroke="#1098D0" stroke-width="1.5"/>
+      <text x="290" y="110" class="svg-label" style="fill:#1098D0;font-size:9px">To Shale Shaker</text>
+      <line x1="274" y1="108" x2="289" y2="108" class="leader"/>
+      <!-- Discharge arrow -->
+      <line x1="263" y1="88" x2="263" y2="76" stroke="#1098D0" stroke-width="2"/>
+      <polygon points="259,78 263,68 267,78" fill="#1098D0"/>
+
+      <!-- Mechanical seal -->
+      <rect x="298" y="222" width="24" height="32" rx="4" fill="#162d46" stroke="#EF4444" stroke-width="1.5"/>
+      <text x="310" y="255" text-anchor="middle" class="svg-label" style="fill:#EF4444;font-size:8px">Mech.</text>
+      <text x="310" y="265" text-anchor="middle" class="svg-label" style="fill:#EF4444;font-size:8px">Seal</text>
+      <line x1="322" y1="238" x2="370" y2="218" class="leader"/>
+      <text x="374" y="216" class="svg-label-bold" style="fill:#EF4444">Mechanical Seal</text>
+      <text x="374" y="228" class="svg-label" style="font-size:9px">Leakage: 0 ml/hr</text>
+
+      <!-- Pressure gauge -->
+      <circle cx="160" cy="140" r="22" fill="#0a1e30" stroke="#F59E0B" stroke-width="2"/>
+      <text x="160" y="135" text-anchor="middle" class="svg-value" style="font-size:12px">85</text>
+      <text x="160" y="151" text-anchor="middle" class="svg-label" style="font-size:8px;fill:#F59E0B">psi discharge</text>
+      <line x1="182" y1="140" x2="228" y2="148" class="leader"/>
+
+      <!-- Flow meter -->
+      <rect x="85" y="143" width="60" height="36" rx="5" fill="#0a1e30" stroke="#22C55E" stroke-width="1.5"/>
+      <text x="115" y="158" text-anchor="middle" class="svg-label" style="fill:#22C55E;font-size:9px">Flow</text>
+      <text x="115" y="172" text-anchor="middle" class="svg-value" style="fill:#22C55E;font-size:12px">320 gpm</text>
+
+      <!-- Status -->
+      <circle cx="550" cy="80" r="8" fill="#00D68A"/>
+      <text x="538" y="83" text-anchor="end" class="svg-label" style="fill:#00D68A;font-size:10px">RUNNING</text>
+    `
+  },
+
+};
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER DEVICE
+// ═══════════════════════════════════════════════════════════════
+let currentDevice = 'mud-pump';
+
+function showDevice(id, chipEl) {
+  currentDevice = id;
+  // Update chip highlight
+  document.querySelectorAll('.tt-chip').forEach(c => c.classList.remove('active'));
+  if (chipEl) chipEl.classList.add('active');
+
+  const dev = DEVICES[id];
+  if (!dev) return;
+
+  const container = document.getElementById('deviceContainer');
+  container.innerHTML = `
+    <svg width="${dev.w}" height="${dev.h}" viewBox="0 0 ${dev.w} ${dev.h}"
+         xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <style>
+        .svg-label { font-family:'Inter',sans-serif; font-size:11px; fill:#7AAAD0; }
+        .svg-label-bold { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; fill:#C8DCF0; }
+        .svg-label-title { font-family:'Inter',sans-serif; font-size:13px; font-weight:700; fill:#FFFFFF; }
+        .svg-value { font-family:'JetBrains Mono',monospace; font-size:10px; fill:#1098D0; }
+        .leader { stroke:#1A3A60; stroke-width:0.5; stroke-dasharray:3,3; fill:none; }
+      </style>
+      ${dev.svg}
+    </svg>
+  `;
+  container.style.width  = dev.w + 'px';
+  container.style.height = dev.h + 'px';
+
+  // KPI strip
+  const kpiEl = document.getElementById('kpiStrip');
+  kpiEl.innerHTML = dev.kpis.map(k => `
+    <div class="kpi-cell">
+      <div class="kpi-key">${k.key}</div>
+      <div class="kpi-val ${k.cls}">${k.val}<span class="kpi-unit"> ${k.unit}</span></div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAV / TABS
+// ═══════════════════════════════════════════════════════════════
+function setView(v) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function setCTab(el, viewId) {
+  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['twin-view','data-view','trend-view','case-view'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === viewId ? 'flex' : 'none';
+  });
+  if (viewId === 'twin-view') document.getElementById('twin-view').style.flexDirection = 'column';
+}
+
+function selectRig(r) { console.log('Selected rig:', r); }
+function toggleAlerts() { }
+
+// ═══════════════════════════════════════════════════════════════
+// AI QUERY (stubbed — calls can be wired to Netlify function)
+// ═══════════════════════════════════════════════════════════════
+async function sendAiQuery() {
+  const input = document.getElementById('aiInput');
+  const query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+
+  const panel = document.getElementById('aiPanel');
+  const loading = document.createElement('div');
+  loading.className = 'alert-card info';
+  loading.innerHTML = `<div class="ac-header"><span class="ac-badge info">AI</span><span class="ac-time">now</span></div>
+    <div class="ac-title">${query}</div><div class="ac-body">Analysing…</div>`;
+  panel.insertBefore(loading, panel.firstChild);
+
+  // Netlify function endpoint
+  try {
+    const res = await fetch('/api/ai', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ query, device: currentDevice, rig: 'neptune-star' })
+    });
+    const data = await res.json();
+    loading.querySelector('.ac-body').textContent = data.response || 'No response';
+  } catch(e) {
+    loading.querySelector('.ac-body').textContent = 'AI endpoint unavailable. Deploy with ANTHROPIC_API_KEY env var set.';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+buildSidebar();
+buildAiPanel();
+showDevice('mud-pump', document.querySelector('.tt-chip'));
+
+// Live clock in status bar
+setInterval(() => {
+  const now = new Date();
+  const t = now.toUTCString().replace('GMT','UTC');
+}, 1000);
+</script>
+</body>
+</html>
